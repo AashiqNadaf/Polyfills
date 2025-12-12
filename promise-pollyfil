@@ -1,0 +1,50 @@
+function myPromise(executor) {
+    let onResolve, onReject, value, isFulfilled=false, isRejected=false, isCalled;
+    
+    function resolve(val){
+        value = val
+        isFulfilled = true
+        if(typeof onResolve === 'function' ){
+            onResolve(val);
+            isCalled = true;
+        }
+    }
+    
+    function reject(val){
+        value = val
+        isRejected = true;
+        if(typeof onReject === 'function' ){
+            onReject(val);
+            isCalled = true;
+        }
+    }
+    
+    this.then = function(callback) {
+        onResolve = callback
+        if(isFulfilled && !isCalled){
+            isCalled = true;
+            onResolve(value);
+        }
+        return this
+    }
+    
+    this.catch = function(callback) {
+        onReject = callback
+        if(isRejected && !isCalled){
+            isCalled = true;
+            onReject(value);
+        }
+        return this
+    }
+    
+    
+    executor(resolve, reject)
+}
+
+const newPromise = new myPromise((res, rej) => {
+    setTimeout(() => {
+        res(10)
+    }, 2000)
+})
+
+newPromise.then((res) => console.log(res)).catch(err => console.log(err))
